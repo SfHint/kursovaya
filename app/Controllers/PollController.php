@@ -50,7 +50,19 @@ public function index(){
         $status = $this->getPollStatus($poll);
         if($status === 'pending') die('Опрос еще не начался');
         if($status === 'finished') die('Опрос завершен');
+////////////////////////////
+        $cookieName = 'voted_polls';
+        $votedPolls = [];
+    
+        if(isset($_COOKIE[$cookieName])) {
+            $votedPolls = json_decode($_COOKIE[$cookieName], true) ?? [];
+        }
         
+        // Проверяем, голосовал ли уже пользователь
+        if(in_array($id, $votedPolls)) {
+            die('Вы уже проголосовали в этом опросе!');
+        }
+/////////////////////////////
         if($this->config['recaptcha_secret_key']){
             $token = $_POST['g-recaptcha-response'] ?? '';
             $resp = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$this->config['recaptcha_secret_key'].'&response='.urlencode($token));
@@ -61,6 +73,10 @@ public function index(){
         $option_id = isset($_POST['option']) ? (int)$_POST['option'] : 0;
         if(!$option_id) { die('Invalid option'); }
         $v->add($id, $option_id);
+/////////////////////////////////////////
+        $votedPolls[] = $id;
+        setcookie($cookieName, json_encode($votedPolls), time() + 30 * 24 * 3600, '/');
+/////////////////////////////////////////
         header('Location: '.$this->config['base_url'].'/index.php?action=show&id='.$id.'&voted=1');
     }
 }

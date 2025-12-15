@@ -1,3 +1,11 @@
+<?php
+$hasVoted = false;
+if(isset($_COOKIE['voted_polls'])) {
+    $votedPolls = json_decode($_COOKIE['voted_polls'], true) ?? [];
+    $hasVoted = in_array($poll['id'], $votedPolls);
+}
+?>
+<!--  //////////// -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title><?=htmlspecialchars($poll['title'])?></title>
@@ -33,8 +41,12 @@ $total = array_sum($counts);
 <?php if(isset($_GET['voted'])): ?>
   <p class="note">Спасибо! Ваш голос учтён.</p>
 <?php endif; ?>
- 
-<?php if($poll['status'] === 'active'): ?>
+<!--  //////////// -->
+<?php if($hasVoted): ?>
+  <p class="note">Вы уже проголосовали в этом опросе ранее. Результаты доступны ниже.</p>
+<?php endif; ?>
+<!--  ////////////  и снизу строка-->
+<?php if($poll['status'] === 'active' && !$hasVoted): ?>
 <form method="post" action="index.php?action=vote&id=<?=$poll['id']?>">
   <?php foreach($options as $opt): ?>
     <div><label><input type="radio" name="option" value="<?=$opt['id']?>" required> <?=htmlspecialchars($opt['text'])?></label></div>
@@ -44,8 +56,13 @@ $total = array_sum($counts);
   <?php endif; ?>
   <button>Голосовать</button>
 </form>
+<!--  //////////// -->
+<?php elseif($poll['status'] !== 'active' && $hasVoted): ?>
+  <p class="note">Вы участвовали в этом опросе. Итоги голосования:</p>
+<?php elseif($poll['status'] !== 'active'): ?>
+  <p>Голосование недоступно в данный момент.</p>
 <?php endif; ?>
-
+<!--  //////////// -->
 <h3>Результаты</h3>
 <?php foreach($options as $opt):
   $c = $counts[$opt['id']] ?? 0;

@@ -237,3 +237,9 @@ form input[type="radio"] {
     font-size: 11px;
     padding: 3px 8px;
 }
+
+.voted-warning {
+    background: #fff3cd !important;
+    border: 2px solid #ff9800 !important;
+    color: #856404 !important;
+}
